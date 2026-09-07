@@ -21,11 +21,27 @@ export default defineEventHandler(async (event) => {
   for (const ev of events) {
     try {
       if (ev.type === 'status') {
-        await supabase
+        const { data: current, error: readError } = await supabase
           .from('messages')
-          .update({ status: ev.status })
+          .select('status')
           .eq('wa_message_id', ev.waMessageId)
-        await publishStatus(ev.waMessageId, ev.status)
+          .maybeSingle()
+
+        if (readError) throw readError
+        if (!current) {
+          console.warn('[webhook] status sem mensagem correspondente:', ev.waMessageId)
+          continue
+        }
+
+        if (statusRank(ev.status) > statusRank(current.status)) {
+          const { error: updateError } = await supabase
+            .from('messages')
+            .update({ status: ev.status })
+            .eq('wa_message_id', ev.waMessageId)
+          if (updateError) throw updateError
+
+          await publishStatus(ev.waMessageId, ev.status)
+        }
         continue
       }
 
@@ -45,6 +61,10 @@ export default defineEventHandler(async (event) => {
 
   return { ok: true, processed: events.length }
 })
+
+function statusRank(status: string | null): number {
+  return { sent: 1, delivered: 2, read: 3, failed: 4 }[status ?? ''] ?? 0
+}
 
 async function persistMessage(supabase: ReturnType<typeof useSupabaseServer>, ev: ParsedMessage) {
   if (!ev.phoneNumberId || !ev.contactWaId) return

@@ -28,6 +28,12 @@ export default defineEventHandler(async (event) => {
 
   // 2) envia via Datafy
   const waMessageId = await sendTextMessage(conv.phone_number_id, conv.wa_id, text.trim())
+  if (!waMessageId) {
+    throw createError({
+      statusCode: 502,
+      statusMessage: 'Datafy não retornou o identificador da mensagem enviada',
+    })
+  }
 
   // 3) persiste a mensagem enviada
   const nowIso = new Date().toISOString()
