@@ -14,7 +14,14 @@ const {
   hasMoreMensagens,
 } = storeToRefs(chat)
 
-onMounted(chat.loadConversas)
+onMounted(async () => {
+  try {
+    await $fetch('/api/auth/me')
+    await chat.loadConversas()
+  } catch {
+    await navigateTo('/login')
+  }
+})
 
 const activePeer = computed(() => {
   const c = conversas.value.find((x) => x.id === activeId.value)
@@ -30,6 +37,11 @@ function enviarMensagem(text: string) {
   // envia via Datafy (com update otimista dentro da action)
   chat.sendMensagem(text)
 }
+
+async function sair() {
+  await $fetch('/api/auth/logout', { method: 'POST' })
+  await navigateTo('/login')
+}
 </script>
 
 <template>
@@ -42,6 +54,7 @@ function enviarMensagem(text: string) {
       @select="chat.selectConversa($event)"
       @filtro="filtro = $event"
       @load-more="chat.loadMoreConversas()"
+      @logout="sair"
     />
 
     <AreaMensagens

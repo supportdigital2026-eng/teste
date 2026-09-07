@@ -81,6 +81,14 @@ ngrok http 3000
 
 A Datafy não envia verify token — o endpoint só recebe `POST`.
 
+### 6. Criar acesso ao painel
+
+O painel exige autenticação por e-mail e senha. No Supabase → Authentication →
+Users, crie o usuário operador e acesse o painel pela rota `/login`.
+
+O webhook permanece público para receber eventos da Datafy; as rotas de
+conversas, mensagens e envio exigem uma sessão autenticada.
+
 ---
 
 ## Como funciona (fluxo)

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 defineProps<{ filtro: string }>()
-defineEmits<{ filtro: [value: string] }>()
+const emit = defineEmits<{ filtro: [value: string]; logout: [] }>()
 
 const icons = useIcons()
 const filtros = ['Tudo', 'Não lidas', 'Favoritas', 'Grupos']
@@ -12,6 +12,14 @@ const filtros = ['Tudo', 'Não lidas', 'Favoritas', 'Grupos']
     <div class="flex items-center justify-between px-5 pt-4 pb-3.5 bg-panel-left">
       <h1 class="text-[22px] font-bold text-brand-green tracking-tight">WhatsApp</h1>
       <div class="flex items-center gap-1.5">
+        <button
+          type="button"
+          title="Sair"
+          class="h-10 px-3 rounded-full text-sm text-icon hover:bg-hover-row transition-colors"
+          @click="emit('logout')"
+        >
+          Sair
+        </button>
         <button
           class="w-10 h-10 grid place-items-center rounded-full text-icon hover:bg-hover-row transition-colors [&_svg]:w-5.5 [&_svg]:h-5.5"
           v-html="icons.newChat"
