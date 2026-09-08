@@ -33,7 +33,7 @@ export default defineEventHandler(async (event) => {
           continue
         }
 
-        if (statusRank(ev.status) > statusRank(current.status)) {
+        if (shouldApplyStatus(current.status, ev.status)) {
           const { error: updateError } = await supabase
             .from('messages')
             .update({ status: ev.status })
@@ -64,6 +64,11 @@ export default defineEventHandler(async (event) => {
 
 function statusRank(status: string | null): number {
   return { sent: 1, delivered: 2, read: 3, failed: 4 }[status ?? ''] ?? 0
+}
+
+function shouldApplyStatus(current: string | null, next: string): boolean {
+  if (next === 'failed') return current !== 'delivered' && current !== 'read' && current !== 'failed'
+  return statusRank(next) > statusRank(current)
 }
 
 async function persistMessage(supabase: ReturnType<typeof useSupabaseServer>, ev: ParsedMessage) {
